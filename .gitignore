@@ -1,1 +1,6 @@
 input_data
+private
+__pycache__
+.env
+.profile
+*.sqlite3
