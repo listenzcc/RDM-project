@@ -4,16 +4,23 @@
     <meta name="view">
     <title>RDM</title>
     <link rel="stylesheet" type="text/css" href="static/style.css" />
-    <script type="text/javascript" src="static/jquery-3.5.1.js"></script>
-    <script type="text/javascript" src="static/d3.v7.min.js"></script>
-    <script type="text/javascript" src="static/chart.umd.min.js"></script>
+
+    <!-- Library -->
+    <script type="text/javascript" src="static/library/jquery-3.5.1.js"></script>
+    <script type="text/javascript" src="static/library/d3.v7.min.js"></script>
+
+    <script type="text/javascript" src="static/library/chart.js@4.2.1/chart.umd.min.js"></script>
     <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script> -->
 
-    <script type="text/javascript" src="static/toolbox.js"></script>
-    <script type="text/javascript" src="static/script.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/library/datatables.1.13.2/jquery.dataTables.min.css" />
+    <script type="text/javascript" src="static/library/datatables.1.13.2/jquery.dataTables.min.js"></script>
+    <!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.2/css/jquery.dataTables.min.css" /> -->
+    <!-- <script type="text/javascript" src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.min.js"></script> -->
 
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.2/css/jquery.dataTables.min.css" />
-    <script type="text/javascript" src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.min.js"></script>
+    <!-- Local -->
+    <script type="text/javascript" src="static/toolbox.js"></script>
+    <script type="text/javascript" src="static/refreshHistogram.js"></script>
+    <script type="text/javascript" src="static/loadResources.js"></script>
 </head>
 
 <body>
@@ -25,16 +32,16 @@
     <div>
         <h2>Image viewer</h2>
         <div>
-            <select id="select-1"></select>
-            <select id="select-2"></select>
-            <select id="select-3"></select>
+            <select id="selectModule"></select>
+            <select id="selectSet"></select>
+            <select id="selectName"></select>
         </div>
         <div style="display: flex">
             <div>
-                <img id="img-1" src="static/stimuli_data/78images/image_02.jpg" alt="Image"></img>
+                <img id="singleImageImg" src="static/stimuli_data/78images/image_02.jpg" alt="Image"></img>
             </div>
             <div>
-                <canvas id="canvas-chart1" width="400" height="400"></canvas>
+                <canvas id="singleImageHistogramChartJS" width="400" height="400"></canvas>
             </div>
         </div>
     </div>
