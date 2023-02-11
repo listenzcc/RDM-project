@@ -50,16 +50,15 @@ def resources(request):
 
 # %%
 '''
-Compute the image feature,
+Require the image channel,
 the image is specified by the request
 '''
 
 
-def image_features(request):
+def image_channels(request):
     df = resource_table_input_data
 
     parse = parse_request(request)
-
     dct = split_parse(parse)
 
     select = df.query(
@@ -85,8 +84,18 @@ def image_features(request):
 
     return HttpResponse(json.dumps(dct), content_type='application/json')
 
+# %%
+
+
+def rdm(request):
+    df = resource_table_input_data
+    parse = parse_request(request)
+    dct = split_parse(parse)
+    return HttpResponse(json.dumps(dct), content_type='application/json')
 
 # %%
+
+
 def parse_request(request):
     safe_path = urllib.parse.unquote(request.get_full_path())
     parse = urllib.parse.urlparse(safe_path)

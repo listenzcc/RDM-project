@@ -1,56 +1,91 @@
+/**
+ * File: loadResources.js
+ * Author: Chuncheng Zhang
+ */
+
 console.log("Running script.js");
 console.log(d3.version);
 console.log(Chart.version);
 
-const AllImageOptions = [];
-const VariableContainer = {};
+const AllImageResource = [];
+const AllRDMResource = [];
+const NodeContainer = {};
 
 /**
  * Require and deal with the resources
  */
 function loadResources() {
-    Object.assign(VariableContainer, {
-        singleImageImgNode: document.getElementById("singleImageImg"),
-        singleImageHistogramChartJS: "singleImageHistogramChartJS",
+    Object.assign(NodeContainer, {
+        // RDM
+        rdmModuleSelector: d3.select("RDM-module-selector"),
+        rdmSetSelector: d3.select("RDM-set-selector"),
+        rdmNameSelector: d3.select("RDM-name-selector"),
+        // Single image
+        singleImageImgNode: document.getElementById("singleImage-img"),
+        singleImageHistogramCanvasName: "singleImage-histogram-canvas",
+        singleImageModuleSelector: d3.select("#singleImage-module-selector"),
+        singleImageSetSelector: d3.select("#singleImage-set-selector"),
+        singleImageNameSelector: d3.select("#singleImage-name-selector"),
+        // Resource table
         resourceTableD3Select: d3.select("#table-container-1"),
-        moduleSelector: d3.select("#selectModule"),
-        setSelector: d3.select("#selectSet"),
-        nameSelector: d3.select("#selectName"),
     });
 
+    // Require the resources from the backend
     d3.json("resources").then((json) => {
         log("Load sources", json);
-        fillResourceTable(json);
-        // Fill the AllImageOptions
-        initImageOptions(json);
+
+        // Collect the json resources
+        collectResources(json);
+
+        // Fill the resource table
+        fillResourceTable(NodeContainer.resourceTableD3Select);
+
+        // Init the single image options
+        initSingleImageOptions();
+
+        // Init the RDM options
+        initRDMOptions();
     });
 }
 
-/**
- * Deal with Image options
- * It add triggers of update the images and histograms
- * @param {Json object} json
- */
-function initImageOptions(json) {
-    var extension, name, set, module;
+function collectResources(json) {
+    var { module, set, name, extension, detail } = json;
 
-    for (let i in json.name) {
-        if (json.extension[i] !== "jpg") continue;
-        extension = json.extension[i];
-        name = json.name[i];
-        set = json.set[i];
-        module = json.module[i];
-        AllImageOptions.push({ name, extension, set, module });
+    for (let i in module) {
+        const obj = {
+            module: module[i],
+            set: set[i],
+            name: name[i],
+            extension: extension[i],
+            detail: detail[i],
+        };
+        if (obj.extension === "jpg") AllImageResource.push(obj);
+        if (obj.extension === "npz") AllRDMResource.push(obj);
     }
 
-    log("allImageOptions", AllImageOptions);
+    AllImageResource.columns = ["module", "set", "name", "extension", "detail"];
+    AllRDMResource.columns = ["module", "set", "name", "extension", "detail"];
+    log("allImageOptions", AllImageResource);
+    log("allRDMOptions", AllRDMResource);
+}
 
-    const uniqueModule = [...new Set(AllImageOptions.map((d) => d.module))],
-        uniqueSet = [...new Set(AllImageOptions.map((d) => d.set))];
+function initRDMOptions() {}
+
+/**
+ * Init the single image options
+ * It also adds triggers of update the images and histograms
+ * @param {Json object} json
+ */
+function initSingleImageOptions() {
+    var uniqueModule = [...new Set(AllImageResource.map((d) => d.module))],
+        uniqueSet = [...new Set(AllImageResource.map((d) => d.set))];
 
     //
-    const selectModule = emptyD3Obj(VariableContainer.moduleSelector, "option");
-    selectModule
+    const select_1 = emptyD3Obj(
+        NodeContainer.singleImageModuleSelector,
+        "option"
+    );
+    select_1
         .selectAll("option")
         .data(uniqueModule)
         .enter()
@@ -58,8 +93,8 @@ function initImageOptions(json) {
         .text((d) => d);
 
     //
-    const selectSet = emptyD3Obj(VariableContainer.setSelector, "option");
-    selectSet
+    const select_2 = emptyD3Obj(NodeContainer.singleImageSetSelector, "option");
+    select_2
         .selectAll("option")
         .data(uniqueSet)
         .enter()
@@ -67,17 +102,20 @@ function initImageOptions(json) {
         .text((d) => d);
 
     //
-    const selectName = emptyD3Obj(VariableContainer.nameSelector, "option");
-    resetSelect3();
+    const select_3 = emptyD3Obj(
+        NodeContainer.singleImageNameSelector,
+        "option"
+    );
+    resetSelect_3();
 
     //
-    selectModule.on("change", (e) => {
-        resetSelect3();
+    select_1.on("change", (e) => {
+        resetSelect_3();
         redraw();
     });
 
-    selectSet.on("change", (e) => {
-        resetSelect3();
+    select_2.on("change", (e) => {
+        resetSelect_3();
         redraw();
     });
 
@@ -85,32 +123,32 @@ function initImageOptions(json) {
 
     //
     function redraw() {
-        const module = selectModule.node().value,
-            set = selectSet.node().value,
-            name = selectName.node().value,
-            imgNode = VariableContainer.singleImageImgNode, // document.getElementById("singleImageImg"),
-            chartName = VariableContainer.singleImageHistogramChartJS; // "singleImageHistogramChartJS";
+        var module = select_1.node().value,
+            set = select_2.node().value,
+            name = select_3.node().value,
+            imgNode = NodeContainer.singleImageImgNode,
+            chartName = NodeContainer.singleImageHistogramCanvasName;
         refreshImage(module, set, name, imgNode);
         refreshHistogram(module, set, name, chartName);
     }
 
-    function resetSelect3() {
-        const module = selectModule.node().value,
-            set = selectSet.node().value,
-            data = AllImageOptions.filter(
+    function resetSelect_3() {
+        var module = select_1.node().value,
+            set = select_2.node().value,
+            data = AllImageResource.filter(
                 (d) => (d.module === module) & (d.set === set)
             );
 
-        emptyD3Obj(selectName, "option");
+        emptyD3Obj(select_3, "option");
 
-        selectName
+        select_3
             .selectAll("option")
             .data(data)
             .enter()
             .append("option")
             .text((d) => d.name);
 
-        selectName.on("change", (e) => {
+        select_3.on("change", (e) => {
             redraw();
         });
 
@@ -126,48 +164,18 @@ function initImageOptions(json) {
  * @param {Node} imgNode
  */
 function refreshImage(module, set, name, imgNode) {
-    const { extension } = AllImageOptions.filter(
-        (d) => (d.name === name) & (d.module === module) & (d.set === set)
-    )[0];
-
-    log("Refresh image", { name, module, set, extension });
-
+    log("Refresh image", { module, set, name });
     imgNode.src = `static/${module}/${set}/${name}`;
 }
 
 /**
  * Make table from the give json to the root
- * @param {json object} json
  * @param {d3 dom} root
  */
-function fillResourceTable(
-    json,
-    root = VariableContainer.resourceTableD3Select
-) {
-    const data = [],
-        columnName = [];
-
-    const rowIndex = (() => {
-        const rowIndex = [];
-        for (let col in json) {
-            columnName.push(col);
-            if (rowIndex.length === 0) {
-                for (let j in json[col]) {
-                    rowIndex.push(j);
-                }
-            }
-        }
-        return rowIndex;
-    })();
-
-    var row;
-    rowIndex.map((idx) => {
-        row = [];
-        columnName.map((col, i) => {
-            row.push({ col, value: json[col][idx] });
-        });
-        data.push(row);
-    });
+function fillResourceTable(root) {
+    var { columns } = AllImageResource,
+        concat = AllRDMResource.concat(AllImageResource),
+        data = concat.map((d) => columns.map((c) => d[c]));
 
     // Clear the tables in the root
     emptyD3Obj(root, "table");
@@ -180,7 +188,7 @@ function fillResourceTable(
             .append(name)
             .append("tr")
             .selectAll("th")
-            .data(columnName)
+            .data(columns)
             .enter()
             .append("th")
             .text((d) => title(d));
@@ -197,7 +205,7 @@ function fillResourceTable(
         .data((d) => d)
         .enter()
         .append("td")
-        .text((d) => d.value);
+        .text((d) => d);
 
     // $(table._groups[0][0]).DataTable();
     $(table.node()).DataTable();

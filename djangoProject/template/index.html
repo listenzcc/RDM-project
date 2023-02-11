@@ -26,23 +26,34 @@
 <body>
 
     <div>
-        <h1>RDM project</h1>
+        <h1>RDM Project</h1>
     </div>
 
     <div>
-        <h2>Image viewer</h2>
+        <h2>Single Image Viewer</h2>
         <div>
-            <select id="selectModule"></select>
-            <select id="selectSet"></select>
-            <select id="selectName"></select>
+            <p>Select singleImage</p>
+            <select id="singleImage-module-selector"></select>
+            <select id="singleImage-set-selector"></select>
+            <select id="singleImage-name-selector"></select>
         </div>
         <div style="display: flex">
             <div>
-                <img id="singleImageImg" src="static/stimuli_data/78images/image_02.jpg" alt="Image"></img>
+                <img id="singleImage-img" src="static/stimuli_data/78images/image_02.jpg" alt="Image"></img>
             </div>
             <div>
-                <canvas id="singleImageHistogramChartJS" width="400" height="400"></canvas>
+                <canvas id="singleImage-histogram-canvas" width="400" height="400"></canvas>
             </div>
+        </div>
+    </div>
+
+    <div>
+        <h2>RDM Viewer</h2>
+        <div>
+            <p>Select RDM</p>
+            <select id="RDM-module-selector"></select>
+            <select id="RDM-set-selector"></select>
+            <select id="RDM-name-selector"></select>
         </div>
     </div>
 
