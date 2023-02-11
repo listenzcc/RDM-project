@@ -27,7 +27,8 @@ def index(request):
 
 # %%
 '''
-Resources json
+Require resources json,
+the available images are returned.
 '''
 
 
@@ -49,6 +50,8 @@ def resources(request):
 
 # %%
 '''
+Compute the image feature,
+the image is specified by the request
 '''
 
 
