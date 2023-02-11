@@ -4,3 +4,4 @@ __pycache__
 .env
 .profile
 *.sqlite3
+*.ipynb
