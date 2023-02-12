@@ -55,16 +55,27 @@
             <select id="RDM-module-selector"></select>
             <select id="RDM-set-selector"></select>
             <select id="RDM-name-selector"></select>
+            <select id="RDM-time-selector"></select>
+            <input id="RDM-controller"></input>
         </div>
         <div style="display: flex">
             <div>
                 <canvas id="RDM-canvas" width="400" height="400"></canvas>
             </div>
             <div>
-                <img id="dualImage-img-1" src="" alt="dualImage-img-1" width="200" height="200"></img>
-            </div>
-            <div>
-                <img id="dualImage-img-2" src="" alt="dualImage-img-2" width="200" height="200"></img>
+                <div style="display: flex">
+                    <div>
+                        <p id="dualImage-img-1-p"></p>
+                        <img id="dualImage-img-1" src="" alt="dualImage-img-1" width="200" height="200"></img>
+                    </div>
+                    <div>
+                        <p id="dualImage-img-2-p"></p>
+                        <img id="dualImage-img-2" src="" alt="dualImage-img-2" width="200" height="200"></img>
+                    </div>
+                </div>
+                <div>
+                    <p id="dualImage-RDM-value">RDM value: --</p>
+                </div>
             </div>
         </div>
     </div>

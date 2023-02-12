@@ -2,4 +2,4 @@
 
 source .profile
 echo $RDMRoot
-python djangoProject/manage.py runserver 8081
+python djangoProject/manage.py runserver $1

@@ -11,6 +11,8 @@ const AllImageResource = [];
 const AllRDMResource = [];
 const NodeContainer = {};
 
+const highlight = [{ i: 0, j: 0 }];
+
 /**
  * Require and deal with the resources
  */
@@ -20,9 +22,14 @@ function loadResources() {
         rdmModuleSelector: d3.select("#RDM-module-selector"),
         rdmSetSelector: d3.select("#RDM-set-selector"),
         rdmNameSelector: d3.select("#RDM-name-selector"),
+        rdmTimeSelector: d3.select("#RDM-time-selector"),
+        rdmControllerNode: document.getElementById("RDM-controller"),
         rdmCanvasName: "RDM-canvas",
         dualImageImg1Node: document.getElementById("dualImage-img-1"),
         dualImageImg2Node: document.getElementById("dualImage-img-2"),
+        dualImageImg1PNode: document.getElementById("dualImage-img-1-p"),
+        dualImageImg2PNode: document.getElementById("dualImage-img-2-p"),
+        dualImageRDMValueNode: document.getElementById("dualImage-RDM-value"),
         // Single image
         singleImageImgNode: document.getElementById("singleImage-img"),
         singleImageHistogramCanvasName: "singleImage-histogram-canvas",
@@ -100,19 +107,20 @@ function initRDMOptions() {
         .text((d) => d);
 
     //
-    const select_3 = emptyD3Obj(NodeContainer.rdmNameSelector, "option");
-    resetSelect_3();
+    const select_3 = emptyD3Obj(NodeContainer.rdmNameSelector, "option"),
+        select_4 = emptyD3Obj(NodeContainer.rdmTimeSelector, "option");
+    resetSelect_3_4();
 
     //
     select_1.on("change", (e) => {
-        resetSelect_3();
+        resetSelect_3_4();
     });
 
     select_2.on("change", (e) => {
-        resetSelect_3();
+        resetSelect_3_4();
     });
 
-    function resetSelect_3() {
+    function resetSelect_3_4() {
         var module = select_1.node().value,
             set = select_2.node().value,
             data = AllRDMResource.filter(
@@ -120,6 +128,7 @@ function initRDMOptions() {
             );
 
         emptyD3Obj(select_3, "option");
+        emptyD3Obj(select_4, "option");
 
         select_3
             .selectAll("option")
@@ -128,7 +137,7 @@ function initRDMOptions() {
             .append("option")
             .text((d) => d.name);
 
-        select_3.on("change", (e) => {
+        select_3.on("input", (e) => {
             redraw();
         });
 
@@ -144,12 +153,36 @@ function initRDMOptions() {
 
         d3.json(url).then((json) => {
             log("RDM", json);
-            drawMatrix(json, NodeContainer.rdmCanvasName);
+
+            emptyD3Obj(select_4, "option");
+            select_4.on("input", (e) => {});
+
+            if (json.shape.length === 3) {
+                select_4
+                    .selectAll("option")
+                    .data(new Array(json.shape[0]))
+                    .enter()
+                    .append("option")
+                    .text((d, i) => "" + i);
+                select_4.on("input", (e) => {
+                    refreshRDMMatrix(
+                        json,
+                        NodeContainer.rdmCanvasName,
+                        select_4.node()
+                    );
+                });
+            }
+
+            refreshRDMMatrix(
+                json,
+                NodeContainer.rdmCanvasName,
+                select_4.node()
+            );
         });
     }
 }
 
-function drawMatrix(json, canvasName) {
+function refreshRDMMatrix(json, canvasName, timeSelector) {
     var canvas = document.getElementById(canvasName),
         ctx = canvas.getContext("2d"),
         { width, height } = canvas,
@@ -168,16 +201,23 @@ function drawMatrix(json, canvasName) {
         y,
         v,
         clickGrids,
-        images;
+        images,
+        img1,
+        img2;
 
     images = AllImageResource.filter(({ set: s }) => set === s);
-    log("Using images", images);
 
-    if (shape.length === 3) data = data[0];
+    if (shape.length === 3) {
+        log("Using time", parseInt(timeSelector.value));
+        data = data[parseInt(timeSelector.value)];
+    }
 
-    function redraw(highlight = []) {
+    function redraw() {
         NodeContainer.dualImageImg1Node.src = "";
         NodeContainer.dualImageImg2Node.src = "";
+        NodeContainer.dualImageImg1PNode.innerHTML = "";
+        NodeContainer.dualImageImg2PNode.innerHTML = "";
+        NodeContainer.dualImageRDMValueNode.innerHTML = "RDM value: --";
         ctx.clearRect(0, 0, width, height);
 
         // Draw grid
@@ -204,7 +244,6 @@ function drawMatrix(json, canvasName) {
 
         // Draw highlight
         highlight.map(({ i, j }) => {
-            log(i, j);
             (v = data[i][j] * scaleInv), (x = scaleX(i)), (y = scaleY(j));
 
             ctx.beginPath(),
@@ -214,9 +253,35 @@ function drawMatrix(json, canvasName) {
 
             ctx.beginPath(),
                 (ctx.fillStyle = "red"),
-                (ctx.font = "30px Monospace"),
+                (ctx.font = "30px serif"),
                 ctx.fillText(v.toFixed(2), x + dx, y + dy),
                 ctx.fill();
+
+            img1 = images[i];
+            img2 = images[j];
+
+            log(i, j, img1, img2);
+
+            refreshImage(
+                img1.module,
+                img1.set,
+                img1.name,
+                NodeContainer.dualImageImg1Node
+            );
+            NodeContainer.dualImageImg1PNode.innerHTML =
+                img1.set + "/" + img1.name;
+
+            refreshImage(
+                img2.module,
+                img2.set,
+                img2.name,
+                NodeContainer.dualImageImg2Node
+            );
+            NodeContainer.dualImageImg2PNode.innerHTML =
+                img2.set + "/" + img2.name;
+
+            NodeContainer.dualImageRDMValueNode.innerHTML =
+                "RDM value: " + v.toFixed(2);
         });
     }
 
@@ -227,29 +292,25 @@ function drawMatrix(json, canvasName) {
             clicked = clickGrids.filter(
                 ({ x1, y1, x2, y2 }) => x >= x1 && y >= y1 && x <= x2 && y <= y2
             ),
-            grid = clicked.length > 0 ? clicked[0] : undefined,
-            img1,
-            img2;
+            grid = clicked.length > 0 ? clicked[0] : undefined;
 
         if (grid) {
-            img1 = images[grid.i];
-            img2 = images[grid.j];
-            redraw([{ i: grid.i, j: grid.j }]);
-            log("Click", clicked, grid, img1, img2);
-
-            refreshImage(
-                img1.module,
-                img1.set,
-                img1.name,
-                NodeContainer.dualImageImg1Node
-            );
-            refreshImage(
-                img2.module,
-                img2.set,
-                img2.name,
-                NodeContainer.dualImageImg2Node
-            );
+            highlight[0] = { i: grid.i, j: grid.j };
+            redraw();
+            log("Click", clicked, grid);
         }
+    };
+
+    NodeContainer.rdmControllerNode.onkeydown = (event) => {
+        log(event);
+        if (event.key === "ArrowUp") highlight[0].j -= 1;
+        if (event.key === "ArrowDown") highlight[0].j += 1;
+        if (event.key === "ArrowLeft") highlight[0].i -= 1;
+        if (event.key === "ArrowRight") highlight[0].i += 1;
+        highlight[0].i = (highlight[0].i + nImg) % nImg;
+        highlight[0].j = (highlight[0].j + nImg) % nImg;
+
+        redraw();
     };
 }
 
