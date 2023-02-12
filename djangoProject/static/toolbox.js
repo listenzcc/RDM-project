@@ -1,7 +1,7 @@
 const channelColor = {
-  brightness: "yellow",
-  value: "cyan",
-  saturation: "brown",
+    brightness: "yellow",
+    value: "cyan",
+    saturation: "brown",
 };
 
 /**
@@ -10,7 +10,7 @@ const channelColor = {
  * @returns Boolean
  */
 function isRGBChannel(channelName) {
-  return ["red", "green", "blue"].indexOf(channelName) > -1;
+    return ["red", "green", "blue"].indexOf(channelName) > -1;
 }
 
 /**
@@ -19,7 +19,7 @@ function isRGBChannel(channelName) {
  * @returns Titled format of the word
  */
 function title(word) {
-  return word.charAt(0).toUpperCase() + word.slice(1);
+    return word.charAt(0).toUpperCase() + word.slice(1);
 }
 
 /**
@@ -29,18 +29,18 @@ function title(word) {
  * @returns Emptied dom
  */
 function emptyD3Obj(d3SelectObj, target) {
-  d3SelectObj.selectAll(target).data([]).exit().remove();
-  log("Empty d3 select", { id: d3SelectObj.attr("id"), target });
-  return d3SelectObj;
+    d3SelectObj.selectAll(target).data([]).exit().remove();
+    log("Empty d3 select", { id: d3SelectObj.attr("id"), target });
+    return d3SelectObj;
 }
 
 /**
  * Log the message
- * @param {String} name
- * @param {String} content
  */
-function log(name = "Log", content) {
-  console.log("**********************");
-  console.log(name);
-  console.log(content);
+function log(input) {
+    const args = Array.prototype.slice.call(arguments, 0);
+    console.log("**********************");
+    args.map((d) => {
+        console.log(d);
+    });
 }

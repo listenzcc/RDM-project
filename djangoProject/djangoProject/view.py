@@ -56,11 +56,11 @@ the image is specified by the request
 
 
 def image_channels(request):
+    print('Request image channels')
     df = resource_table_input_data
 
     parse = parse_request(request)
     dct = split_parse(parse)
-
     select = df.query(
         'module=="{module}" & set=="{set}" & name=="{name}"'.format(**dct))
 
@@ -77,7 +77,7 @@ def image_channels(request):
 
         hist = np.histogram(d, bins=255, range=(0, 255))
         dct['channel_' + name] = tuple([int(e) for e in hist[0]])
-        print(name, np.sum(hist[0]), np.min(d), np.max(d))
+
     dct['bins'] = tuple([int(e) for e in hist[1]])
     dct['dim'] = 255
     dct['dim_hue'] = 180
@@ -88,9 +88,44 @@ def image_channels(request):
 
 
 def rdm(request):
+    print('Request RDM')
     df = resource_table_input_data
     parse = parse_request(request)
     dct = split_parse(parse)
+    select = df.query(
+        'module=="{module}" & set=="{set}" & name=="{name}"'.format(**dct))
+
+    loaded = np.load(select.iloc[0]['fullPath'])
+
+    for k in loaded:
+        scale = 1e4
+        data = loaded[k]
+        raw_shape = data.shape
+
+        data = (data * scale).astype(np.int32)
+
+        if len(raw_shape) == 4:
+            data = np.mean(data, axis=0)
+            shape = data.shape
+            data = tuple([tuple([tuple(b) for b in a]) for a in data])
+            dims = ['subject', 'time', 'img', 'img']
+
+        if len(raw_shape) == 3:
+            data = np.mean(data, axis=0)
+            shape = data.shape
+            data = tuple([tuple(e) for e in data])
+            dims = ['subject', 'img', 'img']
+
+        dct['key'] = k
+        dct['data'] = data
+        dct['extent'] = [np.min(data) / scale, np.max(data) / scale]
+        dct['rawShape'] = raw_shape
+        dct['shape'] = shape
+        dct['dims'] = dims
+        dct['scale'] = scale
+
+        break
+
     return HttpResponse(json.dumps(dct), content_type='application/json')
 
 # %%

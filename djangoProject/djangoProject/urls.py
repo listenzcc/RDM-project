@@ -25,5 +25,5 @@ urlpatterns = [
     path('index.html', view.index),
     path('resources', view.resources),
     path('imageChannels', view.image_channels),
-    path('RDM', view.rdm)
+    path('rdm', view.rdm)
 ]
