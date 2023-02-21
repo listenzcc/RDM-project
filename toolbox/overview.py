@@ -8,9 +8,9 @@ Check the resources of the project
 # %%
 import os
 import numpy as np
-from PIL import Image
 import pandas as pd
 
+from PIL import Image
 from pathlib import Path
 
 # %%
@@ -30,7 +30,7 @@ def _extension(name):
 
 root_dir = Path(os.environ['RDMRoot'])
 input_data = root_dir.joinpath('input_data')
-data_folders = ['brain_data', 'stimuli_data']
+data_folders = ['brain_data', 'stimuli_data', 'standard_AlexNet']
 image_folders = ['78images', '92images']
 
 
@@ -70,3 +70,5 @@ resource_table_input_data = df
 resource_table_input_data
 
 # %%
+if __name__ == '__main__':
+    print(resource_table_input_data)

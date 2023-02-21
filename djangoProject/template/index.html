@@ -19,7 +19,7 @@
 
     <!-- Local -->
     <script type="text/javascript" src="static/toolbox.js"></script>
-    <script type="text/javascript" src="static/refreshHistogram.js"></script>
+    <script type="text/javascript" src="static/refreshChartJS.js"></script>
     <script type="text/javascript" src="static/loadResources.js"></script>
 </head>
 
@@ -76,6 +76,20 @@
                 <div>
                     <p id="dualImage-RDM-value">RDM value: --</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <h2>RDM NN compare</h2>
+        <div>
+            <p>Select neural network</p>
+            <select id="NN-module-selector"></select>
+            <select id="NN-set-selector"></select>
+            <select id="NN-name-selector"></select>
+            <button id="NN-reset-button">Clear compares</button>
+            <div>
+                <canvas id="RDM-NN-compare-canvas" width="400" height="400"></canvas>
             </div>
         </div>
     </div>
