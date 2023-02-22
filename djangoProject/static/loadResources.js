@@ -520,7 +520,7 @@ function initSingleImageOptions() {
       imgNode = NodeContainer.singleImageImgNode,
       chartName = NodeContainer.singleImageHistogramCanvasName;
     refreshImage(module, set, name, imgNode);
-    refreshHistogram(module, set, name, chartName);
+    refreshHistogramChartJS(module, set, name, chartName);
   }
 }
 
