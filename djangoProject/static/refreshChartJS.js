@@ -4,6 +4,8 @@ const chartJSObjCache = {
 
 const gradientCache = {};
 
+const RDMCompareCache = [];
+
 const histogramOptions = {
   responsive: true,
   plugins: {
@@ -38,11 +40,20 @@ const histogramOptions = {
   },
 };
 
+function alternatePointStyles(ctx) {
+  // log(ctx)
+  if (ctx.dataset._names[ctx.dataIndex].indexOf("fmri") > -1) return "rect";
+  return "circle";
+}
+
 const rdmCompareOptions = {
   responsive: true,
   plugins: {
     legend: {
-      position: "bottom",
+      position: "top",
+      labels: {
+        usePointStyle: true,
+      },
     },
     title: {
       display: true,
@@ -59,6 +70,11 @@ const rdmCompareOptions = {
       },
     },
   },
+  elements: {
+    point: {
+      pointStyle: alternatePointStyles,
+    },
+  },
 };
 
 /**
@@ -68,7 +84,7 @@ const rdmCompareOptions = {
  * @param {} name
  * @param {String} chartName, name of the canvas
  */
-function refreshHistogram(module, set, name, chartName) {
+function refreshHistogramChartJS(module, set, name, chartName) {
   const url = `imageChannels?module=${module}&set=${set}&name=${name}`;
   const ctx = document.getElementById(chartName).getContext("2d");
 
@@ -217,11 +233,23 @@ function refreshHistogram(module, set, name, chartName) {
   });
 }
 
-const RDMCompareCache = [];
+function refreshRdmNnCompareChartJS(
+  module,
+  set,
+  name,
+  names,
+  correlates,
+  chartName,
+  reset
+) {
+  if (reset) {
+    const { length } = RDMCompareCache;
+    log(`Clear the RDM NN Compare ChartJS cache, ${length} --> 0`);
+    for (let i = 0; i < length; i++) RDMCompareCache.pop();
+  }
 
-function refreshRDMCompare(module, set, name, names, correlates, chartName) {
   log(module, set, name);
-  log(names, correlates);
+  // log(names, correlates);
   log(chartName);
   const ctx = document.getElementById(chartName).getContext("2d");
 
@@ -233,7 +261,9 @@ function refreshRDMCompare(module, set, name, names, correlates, chartName) {
     RDMCompareCache.push({
       label: name,
       data: correlates,
-      borderColor: colorScheme[i % 10],
+      borderColor: colorScheme[i % 10] + "90",
+      backgroundColor: colorScheme[i % 10],
+      _names: names,
     });
   }
 

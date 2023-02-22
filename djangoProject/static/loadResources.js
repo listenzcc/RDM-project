@@ -19,10 +19,11 @@ const highlight = [{ i: 0, j: 0 }];
 function loadResources() {
   Object.assign(NodeContainer, {
     // Neural network
-    nnModuleSelector: d3.select("#NN-module-selector"),
-    nnSetSelector: d3.select("#NN-set-selector"),
-    nnNameSelector: d3.select("#NN-name-selector"),
-    nnResetButton: d3.select("#NN-reset-button"),
+    rdmNnCompareSelector: d3.select("#RDM-NN-Compare-module-selector"),
+    rdmNnCompareSetSelector: d3.select("#RDM-NN-Compare-set-selector"),
+    rdmNnCompareNameSelector: d3.select("#RDM-NN-Compare-name-selector"),
+    rdmNnCompareAllButton: d3.select("#RDM-NN-Compare-all-button"),
+    rdmNnCompareResetButton: d3.select("#RDM-NN-Compare-reset-button"),
     rdmNnCompareCanvasName: "RDM-NN-compare-canvas",
     // RDM
     rdmModuleSelector: d3.select("#RDM-module-selector"),
@@ -62,11 +63,11 @@ function loadResources() {
 
     // Init the RDM options
     // initRDMOptions();
-    setTimeout(initRDMOptions, 10);
+    setTimeout(initRdmOptions, 10);
 
     // Init the NN options
     // initNNOptions();
-    setTimeout(initNNOptions, 10);
+    setTimeout(initRdmNnCompareOptions, 10);
   });
 }
 
@@ -95,7 +96,10 @@ function collectResources(json) {
   log("allRDMOptions", AllRDMResource);
 }
 
-function initNNOptions() {
+/**
+ * Initialize the RDM NN compare options
+ */
+function initRdmNnCompareOptions() {
   const resource = AllRDMResource.filter(
     (d) => d.module === "standard_AlexNet"
   );
@@ -104,7 +108,7 @@ function initNNOptions() {
     uniqueSet = [...new Set(resource.map((d) => d.set))];
 
   //
-  const select_1 = emptyD3Obj(NodeContainer.nnModuleSelector, "option");
+  const select_1 = emptyD3Obj(NodeContainer.rdmNnCompareSelector, "option");
   select_1
     .selectAll("option")
     .data(uniqueModule)
@@ -113,13 +117,25 @@ function initNNOptions() {
     .text((d) => d);
 
   //
-  const select_2 = emptyD3Obj(NodeContainer.nnSetSelector, "option");
+  const select_2 = emptyD3Obj(NodeContainer.rdmNnCompareSetSelector, "option");
   select_2
     .selectAll("option")
     .data(uniqueSet)
     .enter()
     .append("option")
     .text((d) => d);
+
+  //
+  const button_1 = NodeContainer.rdmNnCompareAllButton;
+  button_1.on("click", (e) => {
+    redraw(true, true);
+  });
+
+  //
+  const button_2 = NodeContainer.rdmNnCompareResetButton;
+  button_2.on("click", (e) => {
+    redraw(true);
+  });
 
   //
   select_1.on("change", (e) => {
@@ -131,7 +147,7 @@ function initNNOptions() {
   });
 
   //
-  const select_3 = emptyD3Obj(NodeContainer.nnNameSelector, "option");
+  const select_3 = emptyD3Obj(NodeContainer.rdmNnCompareNameSelector, "option");
   resetSelect_3();
 
   function resetSelect_3() {
@@ -150,40 +166,65 @@ function initNNOptions() {
       .append("option")
       .text((d) => d.name);
 
-    select_3.on("input", (e) => {
+    select_3.on("change", (e) => {
       log("Select-3 clicked");
       redraw();
     });
 
     log("Reset select-3", { length: data.length, module, set });
-    redraw();
+    redraw(true);
   }
 
-  function redraw() {
+  /**
+   * Re-draw the chartjs, the parameters are parsed from the select_1, _2, and _3
+   * @param {Boolean} reset The flag of reset the chartjs
+   * @param {Boolean} drawAllOptions The flag of draw all options
+   */
+  function redraw(reset = false, drawAllOptions = false) {
     var module = select_1.node().value,
       set = select_2.node().value,
       name = select_3.node().value,
       url = `rdmCompare?module=${module}&set=${set}&name=${name}`;
 
-    d3.json(url).then((json) => {
-      log("RDM compare", json);
-      var { module, set, name, names, correlates } = json;
-      refreshRDMCompare(
-        module,
-        set,
-        name,
-        names,
-        correlates,
-        NodeContainer.rdmNnCompareCanvasName
+    if (drawAllOptions) {
+      AllRDMResource.filter((d) => (d.module === module) & (d.set === set)).map(
+        ({ name }) => {
+          url = `rdmCompare?module=${module}&set=${set}&name=${name}`;
+          // Do not reset the curves if the drawAllOptions flag is true
+          drawByUrl(url, false);
+        }
       );
-    });
+    } else {
+      drawByUrl(url, reset);
+    }
+
+    /**
+     * Draw the chartjs, the RDM compares result is required by the url
+     * @param {String} url The url of requesting the RDM compares result
+     * @param {Boolean} reset The flag of reset the chartjs
+     */
+    function drawByUrl(url, reset) {
+      d3.json(url).then((json) => {
+        log("RDM compare", json);
+        var { module, set, name, names, correlates } = json;
+        refreshRdmNnCompareChartJS(
+          module,
+          set,
+          name,
+          names,
+          correlates,
+          NodeContainer.rdmNnCompareCanvasName,
+          reset
+        );
+      });
+    }
   }
 }
 
 /**
  * Init the RDM options
  */
-function initRDMOptions() {
+function initRdmOptions() {
   var uniqueModule = [...new Set(AllRDMResource.map((d) => d.module))],
     uniqueSet = [...new Set(AllRDMResource.map((d) => d.set))];
 
@@ -236,7 +277,7 @@ function initRDMOptions() {
       .append("option")
       .text((d) => d.name);
 
-    select_3.on("input", (e) => {
+    select_3.on("change", (e) => {
       redraw();
     });
 

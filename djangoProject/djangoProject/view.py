@@ -107,8 +107,15 @@ class AllBrainRDMData(object):
             loaded = np.load(fullPath)
             for k in loaded:
                 array = loaded[k].astype(np.float64)
-                if len(array.shape) == 4:
+                shape = array.shape
+
+                # Average across the subjects
+                if len(shape) == 4:
                     array = np.mean(array, axis=0)
+
+                if len(shape) == 3:
+                    array = np.mean(array, axis=0)
+
                 break
             return array
 
@@ -120,7 +127,7 @@ class AllBrainRDMData(object):
 
             if len(array.shape) == 3:
                 for i, arr in enumerate(array):
-                    data['{}-{}'.format(name, i)] = arr
+                    data['{}-{:03d}'.format(name, i)] = arr
 
             if len(array.shape) == 2:
                 data[name] = array
